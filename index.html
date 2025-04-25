@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Колесо фортуны</title>
+  <style>
+    canvas { display: block; margin: auto; }
+    #spin { display: block; margin: 20px auto; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <canvas id="wheel" width="300" height="300"></canvas>
+  <button id="spin">Крутить</button>
+
+  <script>
+    const prizes = ["🍪","🏆","🎁","💯","❌","🎉","🎈","🧩"];
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const R = 140, cx = 150, cy = 150;
+    const seg = 2*Math.PI / prizes.length;
+    let angle = 0;
+    function drawWheel() {
+      for(let i=0;i<prizes.length;i++){
+        const a0 = angle + i*seg;
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,R,a0,a0+seg);
+        ctx.fillStyle = i%2 ? "#f8f8f8":"#e8e8e8";
+        ctx.fill();
+        ctx.save();
+        ctx.translate(cx + Math.cos(a0+seg/2)*(R-30),
+                      cy + Math.sin(a0+seg/2)*(R-30));
+        ctx.rotate(a0+seg/2 + Math.PI/2);
+        ctx.fillStyle="#333";
+        ctx.font="20px sans-serif";
+        ctx.fillText(prizes[i], -10, 0);
+        ctx.restore();
+      }
+      ctx.fillStyle="#333";
+      ctx.beginPath();
+      ctx.moveTo(cx,cy-R-10);
+      ctx.lineTo(cx-10,cy-R+20);
+      ctx.lineTo(cx+10,cy-R+20);
+      ctx.fill();
+    }
+    drawWheel();
+    document.getElementById("spin").addEventListener("click",()=>{
+      const spins = Math.floor(Math.random()*5+5)*seg + Math.random()*seg;
+      const duration = 3000, start = performance.now();
+      function animate(ts){
+        const t = Math.min((ts-start)/duration,1);
+        angle = spins * (1 - (1 - t)**3);
+        ctx.clearRect(0,0,300,300);
+        drawWheel();
+        if(t<1) requestAnimationFrame(animate);
+        else {
+          const idx = Math.floor(((2*Math.PI - (angle % (2*Math.PI))) % (2*Math.PI)) / seg);
+          Telegram.WebApp.sendData(prizes[idx]);
+        }
+      }
+      requestAnimationFrame(animate);
+    });
+    if(window.Telegram?.WebApp) window.Telegram.WebApp.expand();
+  </script>
+</body>
+</html>
