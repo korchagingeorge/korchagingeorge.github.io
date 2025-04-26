@@ -1,165 +1,190 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Колесо фортуны</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#f0f2f7;--card:#fff;--accent:#6366f1;--accent2:#818cf8;
-  --shadow:rgba(0,0,0,.1);--text:#1f2937;--disabled:#bbb
+ --bg:#f1f4f9;--card:#fff;--accent:#6366f1;--accent2:#818cf8;
+ --shadow:rgba(0,0,0,.08);--text:#1f2937;--disabled:#b8b8b8
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
 body{background:var(--bg);display:flex;justify-content:center;align-items:center;min-height:100vh;color:var(--text)}
 .card{
-  width:370px;max-width:95%;background:var(--card);border-radius:20px;
-  box-shadow:0 10px 35px var(--shadow);padding:2rem 2rem 2.5rem;text-align:center;
+ width:380px;max-width:95%;background:var(--card);border-radius:22px;
+ box-shadow:0 12px 36px var(--shadow);padding:2.2rem 2rem 2.6rem;text-align:center;position:relative
 }
-h1{font-size:1.8rem;color:var(--accent);margin-bottom:.7rem}
-#tickets{font-weight:600;margin-bottom:1.2rem}
-#wheelBox{position:relative;width:300px;margin:0 auto}
+h1{font-size:1.9rem;color:var(--accent);margin-bottom:.7rem;font-weight:700}
+#tickets{font-weight:600;margin-bottom:1.25rem}
+#wheelWrap{width:300px;height:300px;margin:0 auto;position:relative}
 #arrow{
-  position:absolute;left:50%;top:-22px;transform:translateX(-50%);
-  width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;
-  border-bottom:26px solid #333;border-radius:3px
+ position:absolute;left:50%;top:-24px;transform:translateX(-50%);
+ width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:28px solid #333;border-radius:3px
 }
-canvas{border-radius:50%;width:300px;height:300px;box-shadow:0 4px 18px var(--shadow)}
-button{
-  margin-top:1.5rem;padding:.9rem 2rem;font-size:1.05rem;font-weight:600;
-  color:#fff;background:var(--accent);border:none;border-radius:12px;
-  cursor:pointer;transition:background .2s,transform .1s
+canvas{border-radius:50%;width:300px;height:300px;box-shadow:0 4px 20px var(--shadow)}
+#spin{
+ margin-top:1.6rem;padding:.9rem 2.2rem;font-size:1.06rem;font-weight:600;color:#fff;
+ background:var(--accent);border:none;border-radius:12px;cursor:pointer;
+ transition:background .2s,transform .1s
 }
-button[disabled]{background:var(--disabled);cursor:not-allowed}
-button:not([disabled]):hover{background:var(--accent2)}
-button:not([disabled]):active{transform:scale(.97)}
-#msg{margin-top:1rem;height:1.4em;font-weight:600}
+#spin[disabled]{background:var(--disabled);cursor:not-allowed}
+#spin:not([disabled]):hover{background:var(--accent2)}
+#spin:not([disabled]):active{transform:scale(.97)}
+#msg{margin-top:1.1rem;height:1.4em;font-weight:600}
+#shopBtn{position:absolute;top:1.4rem;right:1.4rem;background:none;border:none;cursor:pointer}
+#shopBtn img{width:28px;height:28px}
 #bear{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
-  width:110px;height:110px;pointer-events:none;opacity:0;transition:transform .8s cubic-bezier(.23,1.1,.32,1),opacity .8s
+ position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);opacity:0;
+ width:120px;height:120px;pointer-events:none;transition:transform .8s cubic-bezier(.23,1.1,.32,1),opacity .8s
 }
 #bear.show{transform:translate(-50%,-50%) scale(1);opacity:1}
-#shopBtn{position:absolute;top:1.3rem;right:1.3rem;background:#fff;border:none}
-#shopBtn img{width:28px;height:28px}
+@keyframes ticketFly{
+ 0%{transform:translateY(0) scale(.5);opacity:0}
+ 50%{opacity:1}
+ 100%{transform:translateY(-70px) scale(1);opacity:0}
+}
+.ticketAnim{
+ position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ font-size:30px;animation:ticketFly .9s forwards;pointer-events:none
+}
+/* — modal — */
 .modal{
-  position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:50
+ position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+ background:rgba(0,0,0,.45);backdrop-filter:blur(2px);z-index:50
 }
 .modal.show{display:flex}
 .modal>div{
-  background:var(--card);padding:1.8rem;border-radius:16px;text-align:center;width:90%;max-width:320px;
-  box-shadow:0 6px 25px var(--shadow)
+ background:var(--card);padding:1.8rem 1.6rem;border-radius:18px;text-align:center;width:90%;max-width:330px;
+ box-shadow:0 8px 28px var(--shadow)
 }
-.item{display:flex;align-items:center;justify-content:space-between;margin:1rem 0}
-.item span{font-size:1.1rem}
-.item button{padding:.4rem 1rem;font-size:.9rem;margin:0}
+.modal h2{font-size:1.4rem;margin-bottom:1rem;color:var(--accent)}
+.item{display:flex;justify-content:space-between;align-items:center;margin:1rem 0}
+.item span{font-size:1.05rem}
+.item button{padding:.5rem 1rem;border:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;transition:background .2s;font-size:.9rem}
+.item button:hover{background:var(--accent2)}
+.close{margin-top:1.4rem;padding:.55rem 1.4rem;font-size:.96rem}
 </style>
 </head>
 <body>
-  <div class="card">
-    <button id="shopBtn" title="Магазин"><img src="https://img.icons8.com/fluency-systems-filled/48/shop.png"/></button>
-    <h1>🎡 Колесо фортуны</h1>
-    <div id="tickets">Билетов: —</div>
+ <div class="card">
+   <button id="shopBtn" title="Магазин"><img src="https://img.icons8.com/ios-glyphs/60/000000/shopping-bag.png"/></button>
+   <h1>🎡 Колесо фортуны</h1>
+   <div id="tickets">Билетов: 1</div>
 
-    <div id="wheelBox">
-      <div id="arrow"></div>
-      <canvas id="wheel" width="300" height="300"></canvas>
-      <img id="bear" src="https://i.imgur.com/6YbG4Wc.png" alt="bear">
-    </div>
+   <div id="wheelWrap">
+     <div id="arrow"></div>
+     <canvas id="wheel" width="300" height="300"></canvas>
+     <img id="bear" src="https://i.imgur.com/6YbG4Wc.png" alt="bear"/>
+   </div>
 
-    <button id="spin">Крутить</button>
-    <div id="msg"></div>
-  </div>
+   <button id="spin">Крутить</button>
+   <div id="msg"></div>
+ </div>
 
-  <!---- Modal-магазин -->
-  <div class="modal" id="shop">
-    <div>
-      <h2 style="margin-bottom:1rem">🛍 Магазин</h2>
-      <div class="item">
-        <span>Плюшевый мишка — 3 🎫</span>
-        <button id="buyBear">Купить</button>
-      </div>
-      <button style="margin-top:1.2rem" onclick="toggleShop()">Закрыть</button>
-    </div>
-  </div>
+ <!-- магазин -->
+ <div class="modal" id="shop">
+   <div>
+     <h2>🛍 Магазин</h2>
+     <div class="item">
+       <span>Плюшевый мишка — 3 🎫</span>
+       <button id="buyBear">Купить</button>
+     </div>
+     <button class="close" onclick="toggleShop()">Закрыть</button>
+   </div>
+ </div>
 
 <script>
-const prizes=[
-  {e:'❌',c:'#fee2e2'},{e:'🎫',c:'#dbeafe'},{e:'🎁',c:'#d1fae5'},
-  {e:'🐻',c:'#fef9c3'},{e:'🎫',c:'#ede9fe'},{e:'🎉',c:'#ffe4e6'},
-  {e:'🎫',c:'#cffafe'},{e:'🎫',c:'#e0e7ff'}
+/* ---------- настройки сегментов ---------- */
+const sectors=[
+ {e:'❌',c:'#fee2e2',delta:0},
+ {e:'🎫',c:'#dbeafe',delta:+1},
+ {e:'🎁',c:'#d1fae5',delta:0},
+ {e:'🐻',c:'#fef9c3',delta:0},
+ {e:'🎫',c:'#ede9fe',delta:+1},
+ {e:'🎉',c:'#ffe4e6',delta:0},
+ {e:'🎫',c:'#cffafe',delta:+1},
+ {e:'🎫',c:'#e0e7ff',delta:+1}
 ];
-const canvas=document.getElementById('wheel'),ctx=canvas.getContext('2d');
-const R=140,cx=150,cy=150,seg=2*Math.PI/prizes.length;
-let angle=0,tickets=0,spinning=false;
+/* ------------ базовые переменные ---------- */
+const wheel=document.getElementById('wheel'),
+      ctx=wheel.getContext('2d'),
+      R=140,cx=150,cy=150,seg=2*Math.PI/sectors.length,
+      spinBtn=document.getElementById('spin'),
+      msg=document.getElementById('msg'),
+      bear=document.getElementById('bear');
+let angle=0,tickets=1,spinning=false;
 
+function readInitialTickets(){
+  const qs=new URLSearchParams(location.search);
+  tickets=parseInt(qs.get('tickets'))||1;
+  renderTickets();
+}
+function renderTickets(){
+  document.getElementById('tickets').textContent=`Билетов: ${tickets}`;
+  spinBtn.disabled=spinning||tickets<1;
+}
 function draw(){
-  prizes.forEach((p,i)=>{
-    const s=angle+i*seg;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,s,s+seg);
-    ctx.fillStyle=p.c;ctx.fill();
+  sectors.forEach((s,i)=>{
+    const start=angle+i*seg;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,start,start+seg);
+    ctx.fillStyle=s.c;ctx.fill();
     ctx.save();
-      ctx.translate(cx+Math.cos(s+seg/2)*(R-32),cy+Math.sin(s+seg/2)*(R-32));
-      ctx.rotate(s+seg/2+Math.PI/2);
-      ctx.font='24px sans-serif';ctx.fillStyle='#333';
-      ctx.fillText(p.e,-12,8);
+      ctx.translate(cx+Math.cos(start+seg/2)*(R-34),cy+Math.sin(start+seg/2)*(R-34));
+      ctx.rotate(start+seg/2+Math.PI/2);
+      ctx.font='25px sans-serif';ctx.fillStyle='#333';
+      ctx.fillText(s.e,-13,10);
     ctx.restore();
   });
 }
-draw();
+draw();readInitialTickets();
 
-function updateTickets(v){
-  tickets=v;
-  document.getElementById('tickets').textContent=`Билетов: ${tickets}`;
-  document.getElementById('spin').disabled=tickets<1||spinning;
-}
-function readTickets(){
-  const t=parseInt(new URLSearchParams(location.search).get('tickets'))||0;
-  updateTickets(t);
-}
-readTickets();
-
-document.getElementById('spin').onclick=()=>{
-  if(tickets<1||spinning)return;
-  spinning=true;updateTickets(tickets); // disable
-  const msg=document.getElementById('msg');msg.textContent='';
-  const duration=3200,totalRot=(Math.random()*3+5)*seg,start=performance.now();
-  const anim=ts=>{
-    const t=Math.min((ts-start)/duration,1);
-    angle=totalRot*(1-(1-t)**3);
-    ctx.clearRect(0,0,300,300);draw();
-    if(t<1)requestAnimationFrame(anim);else finish();
-  };
-  requestAnimationFrame(anim);
+/* ---------- анимация вращения ---------- */
+spinBtn.onclick=()=>{
+ if(spinning||tickets<1)return;
+ spinning=true;renderTickets();msg.textContent='';
+ const totalRot=(Math.random()*3+5)*seg,dur=3200,start=performance.now();
+ const anim=ts=>{
+   const t=Math.min((ts-start)/dur,1);
+   angle=totalRot*(1-(1-t)**3);
+   ctx.clearRect(0,0,300,300);draw();
+   if(t<1)requestAnimationFrame(anim);else finishSpin();
+ };
+ requestAnimationFrame(anim);
 };
+function finishSpin(){
+ spinning=false;
+ tickets--; // билет тратится за попытку
+ const idx=Math.floor(((2*Math.PI-(angle%(2*Math.PI)))%(2*Math.PI))/seg);
+ const result=sectors[idx];
+ tickets+=result.delta; // если выпал 🎫 — добавляем
+ renderTickets();
 
-function finish(){
-  spinning=false;
-  tickets--;updateTickets(tickets);
-  const idx=Math.floor(((2*Math.PI-(angle% (2*Math.PI)))%(2*Math.PI))/seg);
-  const res=prizes[idx].e;
-  const msg=document.getElementById('msg');
-  if(res==='🐻'){showBear();msg.textContent='🎉 Мишка пойман!';}
-  else msg.textContent=`Выпало ${res}.`;
-  // отправляем результат + оставшиеся билеты
-  if(window.Telegram?.WebApp)Telegram.WebApp.sendData(JSON.stringify({type:'spin',prize:res}));
+ if(result.e==='🐻'){ showBear(); msg.textContent='🎉 Мишка пойман!'; }
+ else{
+   msg.textContent=`Выпало ${result.e}${result.delta? ' — +1 🎫':''}`;
+   if(result.e==='🎫')ticketBurst();
+ }
+ if(window.Telegram?.WebApp)Telegram.WebApp.sendData(JSON.stringify({type:'spin',prize:result.e}));
 }
-
-function showBear(){
-  const b=document.getElementById('bear');
-  b.classList.add('show');setTimeout(()=>b.classList.remove('show'),1500);
+/* ---------- анимации ---------- */
+function showBear(){ bear.classList.add('show'); setTimeout(()=>bear.classList.remove('show'),1600); }
+function ticketBurst(){
+ const el=document.createElement('div');el.className='ticketAnim';el.textContent='🎫';
+ document.body.appendChild(el);setTimeout(()=>el.remove(),900);
 }
-
-/* ——— Магазин ——— */
-function toggleShop(){document.getElementById('shop').classList.toggle('show');}
+/* ---------- магазин ---------- */
+const shop=document.getElementById('shop');
+function toggleShop(){shop.classList.toggle('show');}
 document.getElementById('shopBtn').onclick=toggleShop;
 document.getElementById('buyBear').onclick=()=>{
-  if(tickets<3){alert('Не хватает билетов!');return;}
-  tickets-=3;updateTickets(tickets);
-  if(window.Telegram?.WebApp)Telegram.WebApp.sendData(JSON.stringify({type:'buy',item:'bear'}));
-  alert('Покупка успешна! 🎉');
+ if(tickets<3){alert('Не хватает билетов!');return;}
+ tickets-=3;renderTickets();toggleShop();
+ alert('Покупка успешна! 🎉');
+ if(window.Telegram?.WebApp)Telegram.WebApp.sendData(JSON.stringify({type:'buy',item:'bear'}));
 };
-/* expand */
+/* ---------- expand ---------- */
 if(window.Telegram?.WebApp)Telegram.WebApp.expand();
 </script>
 </body>
