@@ -1,67 +1,129 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Колесо фортуны</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Колесо Фортуны</title>
+  <!-- Подключаем шрифт -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    canvas { display: block; margin: auto; }
-    #spin { display: block; margin: 20px auto; padding: 10px 20px; }
+    :root {
+      --bg: #f0f4f8;
+      --card-bg: #fff;
+      --accent: #6366f1;
+      --text: #1f2937;
+      --button-hover: #4f46e5;
+      --shadow: rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body {
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      color: var(--text);
+    }
+    .container {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px var(--shadow);
+      text-align: center;
+      width: 100%; max-width: 400px;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    canvas { display: block; margin: 0 auto; }
+    button {
+      margin-top: 1rem; padding: 0.75rem 1.5rem;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 1rem; cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: var(--button-hover); }
+    #message { margin-top: 1rem; font-weight: 600; }
   </style>
 </head>
 <body>
-  <canvas id="wheel" width="300" height="300"></canvas>
-  <button id="spin">Крутить</button>
-
+  <div class="container">
+    <h1>🎡 Колесо Фортуны</h1>
+    <canvas id="wheel" width="300" height="300"></canvas>
+    <button id="spin">Крутить</button>
+    <div id="message"></div>
+  </div>
   <script>
-    const prizes = ["🍪","🏆","🎁","💯","❌","🎉","🎈","🧩"];
+    // Настройки колеса
+    const prizes = ["❌","🎫","🎁","🐻","🎫","🎉","🎫","🎫"];
     const canvas = document.getElementById("wheel");
-    const ctx = canvas.getContext("2d");
+    const ctx    = canvas.getContext("2d");
     const R = 140, cx = 150, cy = 150;
     const seg = 2*Math.PI / prizes.length;
     let angle = 0;
+
     function drawWheel() {
-      for(let i=0;i<prizes.length;i++){
-        const a0 = angle + i*seg;
+      for (let i = 0; i < prizes.length; i++) {
+        const start = angle + i * seg;
         ctx.beginPath();
-        ctx.moveTo(cx,cy);
-        ctx.arc(cx,cy,R,a0,a0+seg);
-        ctx.fillStyle = i%2 ? "#f8f8f8":"#e8e8e8";
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, start, start + seg);
+        ctx.fillStyle = i % 2 ? "#f8f8f8" : "#e8e8e8";
         ctx.fill();
         ctx.save();
-        ctx.translate(cx + Math.cos(a0+seg/2)*(R-30),
-                      cy + Math.sin(a0+seg/2)*(R-30));
-        ctx.rotate(a0+seg/2 + Math.PI/2);
-        ctx.fillStyle="#333";
-        ctx.font="20px sans-serif";
+        // положение текста
+        ctx.translate(
+          cx + Math.cos(start + seg/2) * (R - 30),
+          cy + Math.sin(start + seg/2) * (R - 30)
+        );
+        ctx.rotate(start + seg/2 + Math.PI/2);
+        ctx.fillStyle = "#333";
+        ctx.font = "20px sans-serif";
         ctx.fillText(prizes[i], -10, 0);
         ctx.restore();
       }
-      ctx.fillStyle="#333";
+      // стрелка
+      ctx.fillStyle = "#333";
       ctx.beginPath();
-      ctx.moveTo(cx,cy-R-10);
-      ctx.lineTo(cx-10,cy-R+20);
-      ctx.lineTo(cx+10,cy-R+20);
+      ctx.moveTo(cx, cy - R - 10);
+      ctx.lineTo(cx - 10, cy - R + 20);
+      ctx.lineTo(cx + 10, cy - R + 20);
       ctx.fill();
     }
+
     drawWheel();
-    document.getElementById("spin").addEventListener("click",()=>{
-      const spins = Math.floor(Math.random()*5+5)*seg + Math.random()*seg;
-      const duration = 3000, start = performance.now();
-      function animate(ts){
-        const t = Math.min((ts-start)/duration,1);
-        angle = spins * (1 - (1 - t)**3);
-        ctx.clearRect(0,0,300,300);
+
+    document.getElementById("spin").onclick = () => {
+      const spins = (Math.random()*3 + 5) * seg;
+      const duration = 3000;
+      const start = performance.now();
+      document.getElementById("message").textContent = "";
+
+      function animate(ts) {
+        const t = Math.min((ts - start)/duration, 1);
+        angle = spins * (1 - Math.pow(1 - t, 3));
+        ctx.clearRect(0, 0, 300, 300);
         drawWheel();
-        if(t<1) requestAnimationFrame(animate);
+        if (t < 1) requestAnimationFrame(animate);
         else {
-          const idx = Math.floor(((2*Math.PI - (angle % (2*Math.PI))) % (2*Math.PI)) / seg);
-          Telegram.WebApp.sendData(prizes[idx]);
+          const idx = Math.floor(
+            ((2*Math.PI - (angle % (2*Math.PI))) % (2*Math.PI)) / seg
+          );
+          const prize = prizes[idx];
+          document.getElementById("message").textContent =
+            prize === "🐻"
+              ? "🎉 Поздравляем! Вы поймали мишку!"
+              : `Вы получили ${prize}. Попробуйте ещё!`;
+          // если нужно отправить боту:
+          if (window.Telegram?.WebApp) {
+            Telegram.WebApp.sendData(prize);
+          }
         }
       }
       requestAnimationFrame(animate);
-    });
-    if(window.Telegram?.WebApp) window.Telegram.WebApp.expand();
+    };
+
+    // разворачиваем WebApp на весь экран
+    if (window.Telegram?.WebApp) {
+      Telegram.WebApp.expand();
+    }
   </script>
 </body>
 </html>
