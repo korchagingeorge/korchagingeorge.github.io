@@ -9,7 +9,7 @@ import TasksPage from './pages/TasksPage';
 
 const App: React.FC = () => {
   Telegram.init();
-  const [active, setActive] = React.useState('profile');
+  const [active, setActive] = React.useState<string>('profile');
 
   const renderPage = () => {
     switch(active) {
@@ -18,12 +18,13 @@ const App: React.FC = () => {
       case 'wheel': return <WheelPage />;
       case 'shop': return <ShopPage />;
       case 'tasks': return <TasksPage />;
+      default: return <ProfilePage />;
     }
-  }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-dark text-text">
-      <div className="flex-grow">{renderPage()}</div>
+      <div className="flex-grow overflow-auto">{renderPage()}</div>
       <BottomNav active={active} onChange={setActive} />
     </div>
   );
