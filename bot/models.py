@@ -8,9 +8,9 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     telegram_id = Column(Integer, unique=True, index=True)
-    username = Column(String)
+    username = Column(String, nullable=True)
     referred_by = Column(Integer, ForeignKey('users.id'), nullable=True)
-    referrals = relationship('User')
+    referrals = relationship('User', backref='referrer', remote_side=[id])
     tickets = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -35,3 +35,4 @@ class Task(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     description = Column(String)
     completed = Column(Integer, default=0)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
